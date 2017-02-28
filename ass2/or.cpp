@@ -1,4 +1,5 @@
 #include <iostream>
+
 #include "mat.h"
 
 using namespace std;
@@ -12,7 +13,7 @@ double slam(double x) {
 
 double randW(double x)
 {
-   return randPMUnit()*0.1;
+   return randPMUnit();
 }
 
 bool train(Matrix inputs, Matrix *w);
@@ -33,18 +34,14 @@ int main()
    }
 
    Matrix inputs(rows, columns, data, "input");
-//   inputs.print();   
+   inputs.print();   
    
-   Matrix w(numInputs+1, columns-numInputs, "w");
+   Matrix w(3, 1, "w");
    w = w.constant(0);
    w = w.map(&randW);
-//   w.print();
+   w.print();
 
-   int count = 0; 
-   int cap = 10000;
-   while( train(inputs, &w ) && count < cap) {
-      count++; 
-   }
+   while( train(inputs, &w ));
 
    cin >> rows >> columns;
    double resultsRead[rows*columns];
@@ -52,26 +49,23 @@ int main()
       cin >> resultsRead[i];
    }
    Matrix results(rows, columns, resultsRead, "testData");
-   //results.print();
+   results.print();
 
-   Matrix x( rows, columns+1, "x" );
+   Matrix x( rows, columns+1, "test x" );
    x = x.constant(0);
    x = x.insert( results, 0, 0 );
    x = x.constantCol(columns, -1);
-//   x.print();
+   x.print();
 
    Matrix prediction = x.dot(w);
    prediction = prediction.map(slam);
 
-   cout << "BEGIN TESTING" << endl;
+   cout << endl << "BEGIN TESTING" << endl;
    for (int i=0; i<rows; i++) {
       results.writeLine(i);
       prediction.writeLine(i);
       cout << endl;
    }
-
-   //if( count == cap )
-      //cout << "cap reached" << endl;
    
 }
 
@@ -79,32 +73,32 @@ bool train(Matrix inputs, Matrix *w)
 {
    //fill y
    Matrix t( inputs , "t");
-   //w->print();
-   t=t.extract(0, w->maxRows()-1, t.maxRows(), w->maxCols());
-   //t.print();
+
+   t=t.extract(0, 2, 4, 1);
+   t.print();
 
 
    Matrix x( inputs, "x" );
-   x = x.extract( 0, 0, x.maxRows(), x.maxCols()-t.maxCols()+1 );
+   x.extract(0, 0, 4, 3);
    //set the bias for each row
    for (int r=0; r<x.maxRows(); r++) {
       x.set(r, x.maxCols()-1, -1);
    }
-   //x.print();
+   x.print();
 
-//   w->print();
+   w->print();
 
    //setup complete multiply
    Matrix y = x.dot(w);
    y.setName("y");
-//   y.print();
+   y.print();
 
    y = y.map(&slam);
-   //y.print();
+   y.print();
 
    Matrix ty = t.sub(y);
    ty.setName("ty");
-   //ty.print();
+   ty.print();
    
    Matrix zero(ty.maxRows(), ty.maxCols(), "zero");
    zero = zero.constant(0);
@@ -113,18 +107,20 @@ bool train(Matrix inputs, Matrix *w)
 
    Matrix xt = x.transpose();
    xt.setName("xt");
-//   xt.print();
+   xt.print();
 
    Matrix d = xt.dot(ty);
    d.setName("d");
-   //d.print();
+   d.print();
    
    Matrix wt = d.scalarMult(0.1);
    wt.setName("wt");
-//   wt.print();
+   wt.print();
 
    w->add(wt);
-//   w->print();
+   w->print();
    
    return 1;
 }
+
+
