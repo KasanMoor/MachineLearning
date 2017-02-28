@@ -10,12 +10,17 @@ double slam(double x) {
       return 1;
 }
 
+double sigmoid(double x)
+{
+   
+}
+
 double randW(double x)
 {
    return randPMUnit()*0.1;
 }
 
-bool train(Matrix inputs, Matrix *w);
+bool train(Matrix inputs, Matrix* v, Matrix *w);
 
 int main() 
 {
@@ -23,9 +28,10 @@ int main()
    int numInputs;
    int rows;
    int columns;
+   int hiddenNodes;
    initRand();
 
-   cin >> numInputs >> rows >> columns;
+   cin >> numInputs >> hiddenNodes >> rows >> columns;
 //   cout << numInputs << endl << rows << " " << columns << endl;
    double data[rows*columns];
    for (int i=0; i<rows*columns; i++) {
@@ -35,14 +41,20 @@ int main()
    Matrix inputs(rows, columns, data, "input");
 //   inputs.print();   
    
-   Matrix w(numInputs+1, columns-numInputs, "w");
+   Matrix v(numInputs+1, hiddenNodes, "v");
+   v = v.constant(0);
+   v = v.map(&randW);
+
+   Matrix w(hiddenNodes+1, columns-numInputs, "w");
    w = w.constant(0);
    w = w.map(&randW);
-//   w.print();
+
+   v.print();
+   w.print();
 
    int count = 0; 
    int cap = 0;
-   while( train(inputs, &w ) && count < cap) {
+   while( train(inputs, &v, &w ) && count < cap) {
       count++; 
    }
 
@@ -65,9 +77,9 @@ int main()
 
    cout << "BEGIN TESTING" << endl;
    for (int i=0; i<rows; i++) {
-      results.writeLine(i);
-      prediction.writeLine(i);
-      cout << endl;
+      //results.writeLine(i);
+      //prediction.writeLine(i);
+      //cout << endl;
    }
 
    //if( count == cap )
@@ -75,13 +87,13 @@ int main()
    
 }
 
-bool train(Matrix inputs, Matrix *w) 
+bool train(Matrix inputs, Matrix *v, Matrix *w) 
 {
    //fill y
    Matrix t( inputs , "t: desired output");
    //w->print();
    t=t.extract(0, w->maxRows()-1, t.maxRows(), w->maxCols());
-   t.print();
+   //t.print();
 
 
    Matrix x( inputs, "x" );
@@ -90,21 +102,33 @@ bool train(Matrix inputs, Matrix *w)
    for (int r=0; r<x.maxRows(); r++) {
       x.set(r, x.maxCols()-1, -1);
    }
-   x.print();
+   //x.print();
 
-   w->print();
+   //w->print();
+
+   Matrix h = x.dot(v);
+   h.setName("h");
+   //h.print();
+   
+   Matrix h2( h.maxRows(), h.maxCols()+1, "h2: h with bias" );
+   h2 = h2.constant(-1);
+   h2 = h2.insert( h, 0, 0 );
+   //h2.print();
 
    //setup complete multiply
-   Matrix y = x.dot(w);
+   Matrix y = h2.dot(w);
    y.setName("y");
-   y.print();
+   //y.print();
 
    y = y.map(&slam);
-   cout << "slam y: " << endl; y.print();
+   //cout << "slam y: " << endl; y.print();
+   ///////////////////////////////////////////////////////////////
+
+   matrix dy?
 
    Matrix ty = t.sub(y);
    ty.setName("ty");
-   cout << "t-y: " << endl; ty.print();
+   //cout << "t-y: " << endl; ty.print();
    
    Matrix zero(ty.maxRows(), ty.maxCols(), "zero");
    zero = zero.constant(0);
@@ -117,14 +141,14 @@ bool train(Matrix inputs, Matrix *w)
 
    Matrix d = xt.dot(ty);
    d.setName("d: xt dot t-y");
-   d.print();
+   //d.print();
    
    Matrix wt = d.scalarMult(0.1);
    wt.setName("wt: d times eta of 01");
-   wt.print();
+   //wt.print();
 
    w->add(wt);
-   cout << "new value for w: " << endl; w->print();
+   //cout << "new value for w: " << endl; w->print();
    
    return 1;
 }
