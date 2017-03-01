@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 #include "mat.h"
 
 using namespace std;
@@ -12,7 +13,7 @@ double slam(double x) {
 
 double sigmoid(double x)
 {
-   
+   return 1/(1+exp(x));
 }
 
 double randW(double x)
@@ -106,25 +107,61 @@ bool train(Matrix inputs, Matrix *v, Matrix *w)
 
    //w->print();
 
-   Matrix h = x.dot(v);
-   h.setName("h");
+   Matrix preh = x.dot(v);
+   preh.setName("preh");
    //h.print();
    
-   Matrix h2( h.maxRows(), h.maxCols()+1, "h2: h with bias" );
-   h2 = h2.constant(-1);
-   h2 = h2.insert( h, 0, 0 );
-   //h2.print();
+   Matrix h( preh.maxRows(), preh.maxCols()+1, "h: prehh with bias" );
+   h = h.constant(-1);
+   h = h.insert( preh, 0, 0 );
+   //h.print();
 
    //setup complete multiply
-   Matrix y = h2.dot(w);
+   ////////////////////////////////////////////////////////////////
+   //forwards
+   ///////////////////////////////////////////////////////////////
+   Matrix y = h.dot(w);
    y.setName("y");
    //y.print();
 
-   y = y.map(&slam);
+   y = y.map(&sigmoid);
    //cout << "slam y: " << endl; y.print();
    ///////////////////////////////////////////////////////////////
+   //backwards
+   //////////////////////////////////////////////////////////////
 
-   matrix dy?
+   Matrix temp = y;
+   Matrix dy = y.sub(t);
+   dy.writeLine(0); cout << "dy y.sub(t)" << endl;
+   y = temp;
+   dy.setName("dy: y.sub(t)");
+   //dy.print();
+   dy.mult(y);
+   dy.writeLine(0); cout << "dy.mult(y)" << endl;
+   dy.mult(y.scalarPreSub(1));
+   dy.writeLine(0); cout << "dy.mult(y.scalarPreSub(1)" << endl;
+   y = temp;
+   //dy.print();
+   dy.writeLine(0); cout << "dy" << endl;
+   
+   temp = h;
+   h.writeLine(0); cout << "h" << endl;
+   Matrix inner1 = h.scalarPreSub(1);
+   inner1.writeLine(0); cout << "inner1" << endl;
+   h = temp;
+   Matrix inner2 = dy.dot(w->transpose());
+   inner2.writeLine(0); cout << "inner2" << endl;
+   Matrix dh = h.mult(inner1.mult(inner2));
+   dh.setName("dh");
+   dh.writeLine(0); cout << "dh" << endl;
+   return 0;
+
+   ///////////////////////////////////////////////////////////////
+   //Adjust
+   //////////////////////////////////////////////////////////////
+   double eta = 0.1;
+   w->sub(
+   
 
    Matrix ty = t.sub(y);
    ty.setName("ty");
