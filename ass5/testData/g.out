@@ -1,0 +1,14 @@
+Outlook=Sunny
+   Humidity=Dry
+      Play
+   Humidity=Humid
+      Noplay
+Outlook=Overcast
+   Play
+Outlook=Rain
+   Wind=Calm
+      Play
+   Wind=Breezy
+      Noplay
+   Wind=Windy
+      Noplay

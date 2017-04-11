@@ -1,0 +1,10 @@
+A=False
+   B=False
+      False
+   B=True
+      True
+A=True
+   B=False
+      True
+   B=True
+      False

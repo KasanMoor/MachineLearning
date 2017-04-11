@@ -1,0 +1,9 @@
+Temp=Cool
+   Play
+Temp=Warm
+   Humidity=Dry
+      Play
+   Humidity=Humid
+      Noplay
+Temp=Hot
+   Noplay
