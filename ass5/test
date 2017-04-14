@@ -1,3 +1,7 @@
 #!/bin/bash
 for filename in ./testData/*.in; do
-   ./id3 < 
+   filename=${filename%.in}
+   echo ${filename}
+   ./id3 < "$filename".in > "$filename".test
+   sdiff "$filename".out "$filename".test
+done
