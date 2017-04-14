@@ -1,0 +1,3 @@
+#!/bin/bash
+for filename in ./testData/*.in; do
+   ./id3 < 

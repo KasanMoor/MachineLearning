@@ -5,4 +5,4 @@ CC=g++
 all: $(MYPROGRAM)
 
 $(MYPROGRAM): $(SOURCE)
-	$(CC) $(SOURCE) -o $(MYPROGRAM)	
+	$(CC) -g $(SOURCE) -o $(MYPROGRAM)	

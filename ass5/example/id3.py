@@ -112,6 +112,7 @@ def entropy(data, feature) :
     sum = 0
     for v in FeatureValues[feature] :
         p = count(data, feature, v)/total   # real divide
+        print("small p: ", p)
         if p>0 : sum += -p * log2(p)        # if p==0 then don't add anything by definition
     return sum
 
