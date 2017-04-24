@@ -9,6 +9,8 @@
 
 using namespace std;
 
+Matrix sb, sw;
+
 double randomWithin(double min, double max) {
    double f = (double)rand() / RAND_MAX;
    return min + f * (max - min);
@@ -155,6 +157,28 @@ Matrix generateCloud( Matrix rawInputs, vector<int> assignments, int kValue) {
    return cloud;
 }
 
+double probability(Matrix subset, Matrix rawInputs){
+   //cout << subset.numRows() << " " << rawInputs.numRows() << endl;
+   //cout << (double)subset.numRows()/(double)rawInputs.numRows() << endl;
+   return (double)subset.numRows()/(double)rawInputs.numRows();
+}
+
+Matrix SW(vector<Matrix> covariances){
+   Matrix sum = covariances[0];
+   for(int i=1; i<covariances.size(); i++){
+      sum.add(covariances[i]);
+   }
+   return sum;
+}
+
+vector<double> allPointsMean(Matrix rawInputs){
+   vector<double> u;
+   for(int i=0; i<rawInputs.numCols(); i++){
+      u.push_back(rawInputs.meanCol(i));
+   }
+   return u;
+}
+
 Matrix movePoints(Matrix centerPoints, 
                   Matrix rawInputs) {
    //cout << "moving points" << endl;
@@ -170,13 +194,22 @@ Matrix movePoints(Matrix centerPoints,
    //cout << "first points asserted..." << endl;
    //cout << "assignments: " << endl; printArray(assignments);
 
+   vector<Matrix> clouds;
+   vector<Matrix> covariances;
    for(int i=0; i<k; i++) {
-      Matrix cloud = generateCloud(rawInputs, assignments, i);
+      clouds.push_back(generateCloud(rawInputs, assignments, i));
+      covariances.push_back(clouds[i].cov());
+      //covariances[i].print();
+      covariances[i].scalarMult(probability(clouds[i], rawInputs));
+      //covariances[i].print();
       //cloud.print();
       for(int j=0; j<rawInputs.numCols(); j++) {
-         centerPoints.set(i, j, cloud.meanCol(j));
+         centerPoints.set(i, j, clouds[i].meanCol(j));
       }
    }
+   sw = SW(covariances);
+   sw.print();
+
 
    return centerPoints;
 }
@@ -211,7 +244,7 @@ int main()
    //cout << "checking" << endl;
    pointList = reInitPoints(pointList, assignments, rawInputs);
 
-   for(int i=0; i<loops; i++) {
+   for(int i=0; i<1; i++) {
       //cout << "loop" << endl;
       pointList = movePoints(pointList, rawInputs);
       pointList.print();
