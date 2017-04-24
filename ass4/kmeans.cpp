@@ -208,7 +208,10 @@ Matrix movePoints(Matrix centerPoints,
       }
    }
    sw = SW(covariances);
-   sw.print();
+   //sw.print();
+
+   sb = centerPoints.cov();
+   //sb.print();
 
 
    return centerPoints;
@@ -244,9 +247,25 @@ int main()
    //cout << "checking" << endl;
    pointList = reInitPoints(pointList, assignments, rawInputs);
 
-   for(int i=0; i<1; i++) {
+   /*for(int i=0; i<loops; i++) {
       //cout << "loop" << endl;
       pointList = movePoints(pointList, rawInputs);
+      //pointList.print();
+   }*/
+   int count = 0;
+   Matrix temp(rawInputs.numCols(), rawInputs.numCols());
+   temp.constant(0);
+   do{
+      pointList = movePoints(pointList, rawInputs);
       pointList.print();
-   }
+      sw.div(sb);
+      if(sw.equal(temp))
+         count ++;
+      else
+         count = 0;
+      temp = sw;
+   }while(count < 10);
+   pointList.print();
+   //sw.print();
+   //sb.print();
 }
